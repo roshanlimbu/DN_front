@@ -160,7 +160,13 @@ export default function ProjectDetailPage() {
         {deployments.length > 0 ? (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {deployments.map((deployment) => (
-              <DeploymentCard key={deployment.id} deployment={deployment} />
+              <DeploymentCard 
+                key={deployment.id} 
+                deployment={deployment} 
+                onDeleted={(id) => {
+                  setDeployments(prev => prev.filter(d => d.id !== id));
+                }}
+              />
             ))}
           </div>
         ) : (
