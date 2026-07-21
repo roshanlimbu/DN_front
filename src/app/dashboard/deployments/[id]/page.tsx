@@ -27,19 +27,22 @@ export default function DeploymentDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchDeployment = useCallback(async () => {
+    if (!params?.id || params.id === "undefined") return [null, []] as const;
     const [deploymentData, logData] = await Promise.all([
       api.get<{ deployment: Deployment }>(`/deployments/${params.id}`),
       api.get<{ logs: DeploymentLog[] }>(`/deployments/${params.id}/logs`),
     ]);
     return [deploymentData.deployment, logData.logs] as const;
-  }, [params.id]);
+  }, [params?.id]);
 
   useEffect(() => {
     let cancelled = false;
 
+    if (!params?.id || params.id === "undefined") return;
+
     fetchDeployment()
       .then(([nextDeployment, nextLogs]) => {
-        if (!cancelled) {
+        if (!cancelled && nextDeployment) {
           setDeployment(nextDeployment);
           setLogs(nextLogs);
         }
@@ -56,22 +59,23 @@ export default function DeploymentDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [fetchDeployment]);
+  }, [fetchDeployment, params?.id]);
 
+  const deploymentStatus = deployment?.status;
   useEffect(() => {
-    if (!deployment || !ACTIVE_STATUSES.has(deployment.status)) return;
+    if (!deploymentStatus || !ACTIVE_STATUSES.has(deploymentStatus)) return;
 
     const interval = window.setInterval(() => {
       fetchDeployment()
         .then(([nextDeployment, nextLogs]) => {
-          setDeployment(nextDeployment);
-          setLogs(nextLogs);
+          if (nextDeployment) setDeployment(nextDeployment);
+          if (nextLogs) setLogs(nextLogs);
         })
         .catch(() => undefined);
     }, 2000);
 
     return () => window.clearInterval(interval);
-  }, [deployment, fetchDeployment]);
+  }, [deploymentStatus, fetchDeployment]);
 
   if (loading) {
     return (
