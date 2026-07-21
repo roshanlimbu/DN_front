@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Settings, Rocket, GitBranch, Loader2 } from "lucide-react";
+import { ChevronLeft, Settings, Rocket, GitBranch, Loader2, Database } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -134,7 +134,7 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Repository</CardTitle>
@@ -151,6 +151,42 @@ export default function ProjectDetailPage() {
             <p>No variables configured.</p>
           </CardContent>
         </Card>
+        {project.database && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                Database
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Engine</span>
+                <span className="font-medium">
+                  {project.database.engine === "mysql" ? "MySQL 8" : "PostgreSQL 16"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Database</span>
+                <span className="font-mono text-xs">{project.database.dbName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Status</span>
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                    project.database.status === "running"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : project.database.status === "failed"
+                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                  }`}
+                >
+                  {project.database.status}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Separator />

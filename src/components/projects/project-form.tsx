@@ -12,10 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Database } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-import type { Project } from "@/types";
+import type { Project, DatabaseEngine } from "@/types";
 
 interface EnvVar {
   key: string;
@@ -30,6 +30,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [envVars, setEnvVars] = useState<EnvVar[]>([]);
+  const [dbEnabled, setDbEnabled] = useState(Boolean(project?.database));
+  const [dbEngine, setDbEngine] = useState<DatabaseEngine>(
+    project?.database?.engine ?? "mysql"
+  );
   const isEditing = Boolean(project);
 
   function addEnvVar() {
@@ -60,6 +64,9 @@ export function ProjectForm({ project }: ProjectFormProps) {
       branch: form.get("branch"),
       appType: form.get("appType"),
       environmentVariables: envVars.filter((env) => env.key.trim()),
+      database: dbEnabled
+        ? { enabled: true, engine: dbEngine }
+        : undefined,
     };
 
     try {
@@ -132,6 +139,57 @@ export function ProjectForm({ project }: ProjectFormProps) {
         </div>
       </div>
 
+      {/* Database Section */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <Label>Database</Label>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={dbEnabled}
+            onClick={() => setDbEnabled(!dbEnabled)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+              dbEnabled ? "bg-primary" : "bg-muted"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                dbEnabled ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        {dbEnabled && (
+          <div className="space-y-3 rounded-lg border p-4">
+            <div className="space-y-2">
+              <Label htmlFor="dbEngine">Database Engine</Label>
+              <Select
+                value={dbEngine}
+                onValueChange={(value) => setDbEngine(value as DatabaseEngine)}
+              >
+                <SelectTrigger id="dbEngine" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mysql">MySQL 8</SelectItem>
+                  <SelectItem value="postgresql">PostgreSQL 16</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              A database will be automatically provisioned with your deployment.
+              Connection credentials will be injected as environment variables
+              (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD).
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Environment Variables Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label>Environment Variables</Label>

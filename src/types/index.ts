@@ -4,11 +4,21 @@ export type DeploymentStatus =
   | "success"
   | "failed";
 
+export type DatabaseEngine = "mysql" | "postgresql";
+export type DatabaseStatus = "pending" | "running" | "stopped" | "failed";
+
 export interface User {
   id: number;
   username: string;
   email: string;
   createdAt?: string;
+}
+
+export interface ProjectDatabase {
+  id: number;
+  engine: DatabaseEngine;
+  dbName: string;
+  status: DatabaseStatus;
 }
 
 export interface Project {
@@ -21,6 +31,7 @@ export interface Project {
   createdAt?: string;
   deployments?: Deployment[];
   environmentVariables?: EnvironmentVariable[];
+  database?: ProjectDatabase | null;
 }
 
 export interface Deployment {
@@ -55,6 +66,7 @@ export interface CreateProjectInput {
   branch: string;
   appType: "laravel" | "dockerfile";
   environmentVariables?: { key: string; value: string }[];
+  database?: { enabled: boolean; engine: DatabaseEngine };
 }
 
 export interface LoginInput {
