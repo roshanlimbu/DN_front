@@ -21,9 +21,11 @@ const ACTIVE_STATUSES = new Set(["pending", "running"]);
 
 export default function DeploymentDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [deployment, setDeployment] = useState<Deployment | null>(null);
   const [logs, setLogs] = useState<DeploymentLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stopping, setStopping] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDeployment = useCallback(async (): Promise<[Deployment | null, DeploymentLog[]]> => {
@@ -98,9 +100,6 @@ export default function DeploymentDetailPage() {
       </div>
     );
   }
-
-  const router = useRouter();
-  const [stopping, setStopping] = useState(false);
 
   async function handleStop() {
     if (!deployment || stopping) return;
