@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ExternalLink, Loader2 } from "lucide-react";
+import { ChevronLeft, ExternalLink, Loader2, Square, Trash2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -94,6 +95,25 @@ export default function DeploymentDetailPage() {
     );
   }
 
+  const router = useRouter();
+  const [stopping, setStopping] = useState(false);
+
+  async function handleStop() {
+    if (!deployment || stopping) return;
+    const confirmed = window.confirm(`Stop and remove Deployment #${deployment.id}?`);
+    if (!confirmed) return;
+
+    setStopping(true);
+    try {
+      await api.delete(`/deployments/${deployment.id}`);
+      router.push(`/dashboard/projects/${deployment.projectId}`);
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to stop deployment");
+      setStopping(false);
+    }
+  }
+
   const appUrl = deployment.domain;
 
   return (
@@ -118,22 +138,36 @@ export default function DeploymentDetailPage() {
             </p>
           </div>
         </div>
-        {appUrl ? (
-          <a
-            href={appUrl}
-            target="_blank"
-            rel="noreferrer"
-            className={buttonVariants({ variant: "outline" })}
+        <div className="flex items-center gap-2">
+          {appUrl ? (
+            <a
+              href={appUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open App
+            </a>
+          ) : (
+            <Button variant="outline" disabled>
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open App
+            </Button>
+          )}
+          <Button
+            variant="destructive"
+            onClick={handleStop}
+            disabled={stopping}
           >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Open App
-          </a>
-        ) : (
-          <Button variant="outline" disabled>
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Open App
+            {stopping ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Square className="mr-2 h-4 w-4 fill-current" />
+            )}
+            {stopping ? "Stopping" : "Stop Deployment"}
           </Button>
-        )}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
