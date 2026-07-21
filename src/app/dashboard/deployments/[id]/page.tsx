@@ -26,13 +26,13 @@ export default function DeploymentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDeployment = useCallback(async () => {
-    if (!params?.id || params.id === "undefined") return [null, []] as const;
+  const fetchDeployment = useCallback(async (): Promise<[Deployment | null, DeploymentLog[]]> => {
+    if (!params?.id || params.id === "undefined") return [null, []];
     const [deploymentData, logData] = await Promise.all([
       api.get<{ deployment: Deployment }>(`/deployments/${params.id}`),
       api.get<{ logs: DeploymentLog[] }>(`/deployments/${params.id}/logs`),
     ]);
-    return [deploymentData.deployment, logData.logs] as const;
+    return [deploymentData.deployment, logData.logs];
   }, [params?.id]);
 
   useEffect(() => {
