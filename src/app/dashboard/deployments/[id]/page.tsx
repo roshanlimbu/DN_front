@@ -195,7 +195,7 @@ export default function DeploymentDetailPage() {
         <CardHeader><CardTitle>Build Logs</CardTitle></CardHeader>
         <CardContent>
           <LogViewer
-            logs={logs.map((log) => log.message)}
+            logs={(logs ?? []).map((log) => log.message)}
             streaming={ACTIVE_STATUSES.has(deployment.status)}
           />
         </CardContent>
